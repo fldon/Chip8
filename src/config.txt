@@ -1,0 +1,18 @@
+KEY_ONE = 1
+KEY_TWO = 2
+KEY_THREE = 3
+KEY_FOUR = q
+KEY_FIVE = w
+KEY_SIX = e
+KEY_SEVEN = a
+KEY_EIGHT = s
+KEY_NINE = d
+KEY_ZERO = x
+KEY_C = 4
+KEY_D = r
+KEY_E = f
+KEY_A = y
+KEY_B = c
+KEY_F = v
+
+INSTRUCTION_DELAY = 1/700

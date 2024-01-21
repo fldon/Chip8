@@ -1,0 +1,121 @@
+#include <chrono>
+#include <bitset>
+#include <vector>
+#include <SDL2/SDL.h>
+
+#ifndef DISPLAY_TH
+#define DISPLAY_TH
+
+using namespace std::chrono_literals;
+
+/*Should contain 64*32 pixels in regular mode, 128*64 in hp48 mode*/
+template <int SCREEN_WIDTH, int SCREEN_HEIGHT> class Display{
+public:
+    Display(SDL_Window*, SDL_Renderer*, uint8_t* vf);
+    void draw(std::bitset<120>, unsigned int, unsigned int);
+    void clearScreen();
+    void refresh();
+private:
+    //Each vector element is one line of 64(128) bits
+    std::vector<std::bitset<SCREEN_WIDTH>> pixels = std::vector<std::bitset<SCREEN_WIDTH>> (SCREEN_HEIGHT);
+    //The window we'll be rendering to
+    SDL_Window* gWindow = nullptr;
+    //The Renderer used by the window
+    SDL_Renderer* gRenderer = nullptr;
+    unsigned char * VF = nullptr; //VF register the display writes to when calling draw()
+};
+
+
+template<int WIDTH, int HEIGHT> Display<WIDTH, HEIGHT>::Display(SDL_Window * nWindow, SDL_Renderer *nRenderer, uint8_t* vf)
+    : gWindow(nWindow), gRenderer(nRenderer), VF(vf) {
+    clearScreen();
+}
+
+template<int WIDTH, int HEIGHT> void Display<WIDTH, HEIGHT>::clearScreen() {
+    for(int i = 0; i < WIDTH; i++) {
+        for(int j = 0; j < HEIGHT; j++) {
+            pixels[j] = 0;
+        }
+    }
+}
+
+/*Draws a sprite and refreshes the display
+Sprite is drawn starting from (xorig, yorig) 
+x and y loop if they are larger than screen resolution
+Sprites are cut off if they are too large
+If any pixel is turned off by drawing, the VF register needs to be set to 1, otherwise to 0*/
+template <int WIDTH, int HEIGHT> void Display<WIDTH,HEIGHT>::draw(std::bitset<120> sprite, unsigned int xorig, unsigned int yorig) {
+    xorig = xorig % WIDTH;
+    yorig = yorig % HEIGHT;
+    //Sprites are at most 15 bytes long per specification
+    //Go through sprite bytes from left to right
+    *VF = 0;
+    for(size_t i = 0; i < 15; i++) {
+        auto currline = sprite;
+        currline >>= ((14 - i)*8); // go through sprite lines
+        currline = currline & std::bitset<120>(255); //only take rightmost byte
+        //XOR the sprite and the screen bitset starting at xorig,yorig
+        //Cut off sprites at the edges
+        //TODO: XOR currently assumes that screen fits inside a long. This is not ideal and should be fixed
+        if((yorig + i) < HEIGHT){
+            //Special case: sprite gets cut off on the right side (then it has to be shifted right instead of left)
+            auto shiftedline = xorig <= (WIDTH-8) ? (currline << (WIDTH - 8 - xorig)) : (currline >> (xorig - (WIDTH - 8)));
+            if((pixels[yorig + i].to_ulong() & (shiftedline.to_ulong())) != 0)
+            {
+                *VF = 1; //TODO: test whether this works, it should
+            }
+            pixels[yorig + i] = std::bitset<WIDTH>(pixels[yorig + i].to_ulong() ^ (shiftedline.to_ulong()));   //display bitset of the current line
+        }
+    }
+}
+
+/*calls to SDL to (re)draw all the pixels and to update the window*/
+template <int WIDTH, int HEIGHT> void Display<WIDTH, HEIGHT>::refresh() {
+    bool rendernow = true;
+
+    //if(displaymode == displaymodes::ORIGCHIP)
+    {
+        //count time since last refresh call: only call refresh if time is larger than refresh interval
+        // otherwise, set rendernow to false
+        static std::chrono::time_point<std::chrono::high_resolution_clock> lastTimeRefresh = std::chrono::high_resolution_clock::now();
+        static constexpr std::chrono::duration MUS_INTERVAL = 4000us;
+        {
+            do
+            {
+                const std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
+                if(std::chrono::duration_cast<std::chrono::microseconds>(now - lastTimeRefresh) <  MUS_INTERVAL)
+                {
+                    rendernow = false;
+                }
+                else
+                {
+                    lastTimeRefresh = std::chrono::high_resolution_clock::now();
+                    rendernow = true;
+                }
+            }
+            while(!rendernow);
+        }
+    }
+
+    if (rendernow)
+    {
+        //Clear screen
+        SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );
+        SDL_RenderClear( gRenderer );
+
+        //Render red filled quad (64*32)
+        for(int i = 0; i < WIDTH; i++) {
+            for(int j = 0; j < HEIGHT; j++) {
+                SDL_Rect fillRect = {i * 10, j * 10, 10, 10 }; //TODO: 10 as magic number should probably be replaced... It stems from the factor ten in 64 pixels to 640 as screen width
+                SDL_SetRenderDrawColor( gRenderer, (pixels[j] >> (WIDTH - 1 - i)).to_ulong() % 2 != 0? 0xFF : 0x00, 0x00, 0x00, 0xFF );
+                SDL_RenderFillRect( gRenderer, &fillRect );
+            }
+        }
+
+
+        //Update screen
+        SDL_RenderPresent( gRenderer );
+    }
+}
+
+#endif
