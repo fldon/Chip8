@@ -24,6 +24,8 @@ public:
     void StopEmulator(); //Stops the current emulator and destroys the SDL window
     void StartEmulator(std::string filename); //Starts emulator in current mode: creates new SDL window
     void ExecuteEmulatorStep(); //Executes one step of mainloop
+    void SendSDLKeyPressedEvent(SDL_Keycode);
+    void SendSDLKeyReleasedEvent(SDL_Keycode);
 
 private:
     bool createSDLWindow();

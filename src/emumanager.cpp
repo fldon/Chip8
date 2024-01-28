@@ -60,7 +60,7 @@ void EmuManager::StartEmulator(std::string filename)
     }
     else if (mMode == EmuManager::EmuMode::LegacyC8)
     {
-        mEmulator = std::make_unique<CC8Emulator>(filename, gWindow, gRenderer);
+        //mEmulator = std::make_unique<CC8Emulator>(filename, gWindow, gRenderer);
     }
     mEmulator->StartProcessing();
 }
@@ -73,4 +73,14 @@ void EmuManager::ExecuteEmulatorStep()
 void EmuManager::Switchmode(EmuManager::EmuMode newMode)
 {
     std::cout << "EmuManager::Switchmode";
+}
+
+void EmuManager::SendSDLKeyPressedEvent(SDL_Keycode key)
+{
+    mEmulator->SetSDLKeyPressedEvent(key);
+}
+
+void EmuManager::SendSDLKeyReleasedEvent(SDL_Keycode key)
+{
+    mEmulator->SetSDLKeyReleasedEvent(key);
 }

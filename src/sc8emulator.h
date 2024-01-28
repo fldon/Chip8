@@ -26,6 +26,8 @@ public:
     void StopProcessing() override;
     virtual ~SC8Emulator() = default;
     void mainloop() override;
+    void SetSDLKeyPressedEvent(SDL_Keycode key) override;
+    void SetSDLKeyReleasedEvent(SDL_Keycode key) override;
 
 protected:
 
@@ -72,6 +74,8 @@ private:
 
     void startbeep(int channel);
     void stopbeep(int channel);
+
+    std::pair<SDL_Keycode, bool> currentpressedkey; //true for keydown, false for keyup-event
 
 };
 

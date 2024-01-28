@@ -42,6 +42,16 @@ SC8Emulator::SC8Emulator(std::string filename, SDL_Window *gWindow, SDL_Renderer
     Mix_Volume(soundchannel, 2); //TODO: destructor of emulator should reset all SDL thingies and stop sounds
 }
 
+void SC8Emulator::SetSDLKeyPressedEvent(SDL_Keycode key)
+{
+    currentpressedkey = std::make_pair(key, true);
+}
+
+void SC8Emulator::SetSDLKeyReleasedEvent(SDL_Keycode key)
+{
+    currentpressedkey = std::make_pair(key, false);
+}
+
 void SC8Emulator::StartProcessing()
 {
     //mainloop();
@@ -183,8 +193,10 @@ void SC8Emulator::mainloop() {
 #endif
     //{
         //Handle events on queue
-        while( SDL_PollEvent( &e ) != 0 )
+        //while( SDL_PollEvent( &e ) != 0 )
+        if(currentpressedkey.first != 0)
         {
+            /*
             switch(e.type)
             {
             //User requests quit
@@ -203,6 +215,19 @@ void SC8Emulator::mainloop() {
             {
                 keyPressed.erase(std::remove(keyPressed.begin(), keyPressed.end(), e.key.keysym.sym), keyPressed.end());
             }break;
+            }
+            */
+
+            if(currentpressedkey.second)
+            {
+                if(std::find(keyPressed.begin(), keyPressed.end(), currentpressedkey.first) == keyPressed.end())
+                {
+                    keyPressed.push_back(currentpressedkey.first);
+                }
+            }
+            else
+            {
+                keyPressed.erase(std::remove(keyPressed.begin(), keyPressed.end(), currentpressedkey.first), keyPressed.end());
             }
         }
         //handle keypressevents and give them to the execute function
