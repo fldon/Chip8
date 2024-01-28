@@ -1,9 +1,11 @@
 #include <iostream>
 #include<fstream>
 #include <stdexcept>
-#include "display.th"
 #include "c8timer.h"
 #include "cc8emulator.h"
+#include "sc8emulator.h"
+#include "emumanager.h"
+#include "qtfrontend.h"
 
 //TODO Make this mode configurable to SCHIP instruction set in frontend
 enum class modes { ORIGCHIP };
@@ -16,8 +18,8 @@ bool initsdl(SDL_Window * &gWindow, SDL_Renderer * &gRenderer) {
     //Screen dimension constants
     const int SCREEN_WIDTH_OFFSET = 0;
     const int SCREEN_HEIGHT_OFFSET = 0;
-    const int SCREEN_WIDTH = 640 + SCREEN_WIDTH_OFFSET;
-    const int SCREEN_HEIGHT = 320 + SCREEN_HEIGHT_OFFSET;
+    const int SCREEN_WIDTH = 1280 + SCREEN_WIDTH_OFFSET;
+    const int SCREEN_HEIGHT = 640 + SCREEN_HEIGHT_OFFSET;
 
     //The window we'll be rendering to
     gWindow = NULL;
@@ -40,6 +42,7 @@ bool initsdl(SDL_Window * &gWindow, SDL_Renderer * &gRenderer) {
             printf( "Warning: Linear texture filtering not enabled!" );
         }
 
+        /*
         //Create window
         gWindow = SDL_CreateWindow( "Chip 8 Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
         if( gWindow == NULL )
@@ -57,6 +60,7 @@ bool initsdl(SDL_Window * &gWindow, SDL_Renderer * &gRenderer) {
                 success = false;
             }
         }
+        */
 
         constexpr int samplingFrequency = 44100;
         Uint16 audioFormat = AUDIO_S16SYS;      // 16 Bits per sample
@@ -73,24 +77,28 @@ bool initsdl(SDL_Window * &gWindow, SDL_Renderer * &gRenderer) {
 
 }
 
-int main() {
+int main(int argc, char*argv[]) {
     SDL_Window * gWindow = nullptr;
     SDL_Renderer *gRenderer = nullptr;
     if(!initsdl(gWindow, gRenderer)) throw std::runtime_error("Could not initialize sdl window");
 
-    std::string filename = "";
-    std::cout << "Please enter a file to load: ";
-    std::cin >> filename;
+    EmuManager man;
 
-    CC8Emulator emu(filename, gWindow, gRenderer);
+    QApplication app(argc, argv);
 
-    emu.StartProcessing(); //TODO: move all the managing stuff into EmuManager
+    QTFrontend frontend(man);
+
+    //wait here for the frontend to give "quit" signal
+    app.exec();
 
     //Destroy window
+    //TODO should happen through emumanager during switch or stop function, not explicitly here
+    /*
     SDL_DestroyRenderer( gRenderer );
     SDL_DestroyWindow( gWindow );
     gWindow = NULL;
     gRenderer = NULL;
+    */
 
     //Quit SDL subsystems
     SDL_Quit();

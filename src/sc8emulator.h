@@ -6,25 +6,26 @@
 #include <bitset>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
+#include "c8emudisplay.h"
 #include "c8timer.h"
 #include "IC8Emulator.h"
-#include "c8emudisplay.h"
 
-#ifndef CC8EMULATOR_H
-#define CC8EMULATOR_H
+#ifndef SC8EMULATOR_H
+#define SC8EMULATOR_H
 
 
-class CC8Emulator : public IC8Emulator
+class SC8Emulator : public IC8Emulator
 {
 public:
-    CC8Emulator(std::string filename, SDL_Window *gWindow, SDL_Renderer *gRenderer);
-    CC8Emulator(const CC8Emulator &rhs) = delete;
-    CC8Emulator(const CC8Emulator &&rhs) = delete;
-    CC8Emulator& operator=(const CC8Emulator &rhs) = delete;
-    CC8Emulator& operator=(const CC8Emulator &&rhs) = delete;
+    SC8Emulator(std::string filename, SDL_Window *gWindow, SDL_Renderer *gRenderer);
+    SC8Emulator(const SC8Emulator &rhs) = delete;
+    SC8Emulator(const SC8Emulator &&rhs) = delete;
+    SC8Emulator& operator=(const SC8Emulator &rhs) = delete;
+    SC8Emulator& operator=(const SC8Emulator &&rhs) = delete;
     void StartProcessing() override;
     void StopProcessing() override;
-    virtual ~CC8Emulator() = default;
+    virtual ~SC8Emulator() = default;
+    void mainloop() override;
 
 protected:
 
@@ -71,8 +72,7 @@ private:
 
     void startbeep(int channel);
     void stopbeep(int channel);
-    void mainloop();
 
 };
 
-#endif // CC8EMULATOR_H
+#endif // SC8EMULATOR_H

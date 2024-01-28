@@ -5,6 +5,7 @@ class IC8Emulator{
 public:
     virtual void StartProcessing() = 0;
     virtual void StopProcessing() = 0;
+    virtual void mainloop() = 0;
     virtual ~IC8Emulator(){};
 };
 

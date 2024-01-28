@@ -2,6 +2,7 @@
 #include <bitset>
 #include <vector>
 #include <SDL2/SDL.h>
+#include <iostream>
 
 #ifndef DISPLAY_TH
 #define DISPLAY_TH
@@ -56,7 +57,6 @@ template <int WIDTH, int HEIGHT> void Display<WIDTH,HEIGHT>::draw(std::bitset<12
         currline = currline & std::bitset<120>(255); //only take rightmost byte
         //XOR the sprite and the screen bitset starting at xorig,yorig
         //Cut off sprites at the edges
-        //TODO: XOR currently assumes that screen fits inside a long. This is not ideal and should be fixed
         if((yorig + i) < HEIGHT){
             //Special case: sprite gets cut off on the right side (then it has to be shifted right instead of left)
             auto shiftedline = xorig <= (WIDTH-8) ? (currline << (WIDTH - 8 - xorig)) : (currline >> (xorig - (WIDTH - 8)));
@@ -78,7 +78,11 @@ template <int WIDTH, int HEIGHT> void Display<WIDTH, HEIGHT>::refresh() {
         //count time since last refresh call: only call refresh if time is larger than refresh interval
         // otherwise, set rendernow to false
         static std::chrono::time_point<std::chrono::high_resolution_clock> lastTimeRefresh = std::chrono::high_resolution_clock::now();
-        static constexpr std::chrono::duration MUS_INTERVAL = 4000us;
+#ifdef CHECKFRAMETIMINGS
+        static std::chrono::time_point<std::chrono::high_resolution_clock> lastFullSecond = std::chrono::high_resolution_clock::now();
+        static int framecount = 0;
+#endif
+        static constexpr std::chrono::duration MUS_INTERVAL = 16667us;
         {
             do
             {
@@ -89,12 +93,25 @@ template <int WIDTH, int HEIGHT> void Display<WIDTH, HEIGHT>::refresh() {
                 }
                 else
                 {
+#ifdef CHECKFRAMETIMINGS
+                    framecount++;
+                    std::cout << "Time for last frame: " << std::chrono::duration_cast<std::chrono::microseconds>(now - lastTimeRefresh).count() << "mus\n";
+#endif
                     lastTimeRefresh = std::chrono::high_resolution_clock::now();
                     rendernow = true;
                 }
             }
             while(!rendernow);
         }
+#ifdef CHECKFRAMETIMINGS
+        const std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
+        if(std::chrono::duration_cast<std::chrono::microseconds>(now - lastFullSecond) > 1s)
+        {
+            lastFullSecond = std::chrono::high_resolution_clock::now();
+            std::cout << "Frames in last second drawn: " << framecount << "\n";
+            framecount = 0;
+        }
+#endif
     }
 
     if (rendernow)
