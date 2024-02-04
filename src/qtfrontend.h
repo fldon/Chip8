@@ -27,10 +27,6 @@ private slots:
 
 private:
     void UpdateEmu();
-    void keyPressEvent(QKeyEvent *event) override;
-    void keyReleaseEvent(QKeyEvent *event) override;
-
-    std::map<Qt::Key, SDL_Keycode> qttosdlkeys;
 
     Ui::QTFrontend *ui;
     EmuManager &mEmumanager;

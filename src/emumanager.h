@@ -4,12 +4,14 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include "IC8Emulator.h"
+#include "sdlwidget.h"
+#include "ISDLInputReceiver.h"
 
 /*
  * Manages current emulator
  * Encapsulates the functionality that the QT frontend calls later
  * */
-class EmuManager
+class EmuManager : public ISDLINPUTRECEIVER
 {
 public:
     enum class EmuMode
@@ -28,12 +30,12 @@ public:
     void SendSDLKeyReleasedEvent(SDL_Keycode);
 
 private:
-    bool createSDLWindow();
+    void createSDLWindow();
 
     std::unique_ptr<IC8Emulator> mEmulator;
     EmuMode mMode;
-    SDL_Window *gWindow;
-    SDL_Renderer *gRenderer;
+    //SDL_Window *gWindow;
+    std::unique_ptr<SDLWidget> gWidget;
 };
 
 #endif // EMUMANAGER_H

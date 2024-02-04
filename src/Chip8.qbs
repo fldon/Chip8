@@ -5,6 +5,7 @@ QtApplication {
     install: true
     files: [
         "IC8Emulator.h",
+        "ISDLInputReceiver.h",
         "c8emudisplay.cpp",
         "c8emudisplay.h",
         "c8timer.cpp",
@@ -20,6 +21,8 @@ QtApplication {
         "qtfrontend.ui",
         "sc8emulator.cpp",
         "sc8emulator.h",
+        "sdlwidget.cpp",
+        "sdlwidget.h",
     ]
     Group {
             name: "Runtime resources"
