@@ -28,13 +28,17 @@ private slots:
 
     void on_actionStop_Emulator_triggered();
 
+    void on_actionLegacy_C8_triggered();
+
+    void on_actionSCHIP_triggered();
+
 private:
     void UpdateEmu();
     void StopEmu();
 
     Ui::QTFrontend *ui;
     EmuManager &mEmumanager;
-    QTimer *timer;
+    std::unique_ptr<QTimer> timer;
 };
 
 #endif // QTFRONTEND_H

@@ -67,7 +67,6 @@ public:
     }
 
     virtual ~SDLWidget() {
-        //TODO: should window and/or renderer be deleted here using sdl functions?
         SDL_DestroyRenderer( mRenderer );
         SDL_DestroyWindow( mWindow );
     }
@@ -81,6 +80,10 @@ public:
         mInputReceiver->SendSDLKeyReleasedEvent(qttosdlkeys.at(static_cast<Qt::Key>(event->key())));
     }
 
+    void closeEvent (QCloseEvent *event) override
+    {
+        event->ignore();
+    }
 
     SDL_Window* mWindow = nullptr;
     SDL_Renderer *mRenderer = nullptr;

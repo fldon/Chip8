@@ -8,9 +8,10 @@ QTFrontend::QTFrontend(EmuManager &nManager, QWidget *parent)
 
     ui->setupUi(this);
     show();
-    timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, QOverload<>::of(&QTFrontend::UpdateEmu));
+    timer = std::make_unique<QTimer>(this);
+    connect(timer.get(), &QTimer::timeout, this, QOverload<>::of(&QTFrontend::UpdateEmu));
     setAttribute(Qt::WA_QuitOnClose);
+    ui->actionStop_Emulator->setEnabled(false);
 }
 
 QTFrontend::~QTFrontend()
@@ -31,9 +32,12 @@ void QTFrontend::on_actionOpen_triggered()
     if ( fileName.isNull() == false )
     {
         mEmumanager.StartEmulator(fileName.toStdString());
+
+        static int ExecuteInterval = 16; //test
+        timer->start(ExecuteInterval);
+        ui->actionOpen->setEnabled(false);
+        ui->actionStop_Emulator->setEnabled(true);
     }
-    static int ExecuteInterval = 16; //test
-    timer->start(ExecuteInterval);
 }
 
 void QTFrontend::on_actionStop_Emulator_triggered()
@@ -46,6 +50,8 @@ void QTFrontend::StopEmu()
     //stop timer before stopping emulator
     timer->stop();
     mEmumanager.StopEmulator();
+    ui->actionOpen->setEnabled(true);
+    ui->actionStop_Emulator->setEnabled(false);
 }
 
 void QTFrontend::closeEvent (QCloseEvent *event)
@@ -53,3 +59,23 @@ void QTFrontend::closeEvent (QCloseEvent *event)
     StopEmu();
     event->accept();
 }
+
+void QTFrontend::on_actionLegacy_C8_triggered()
+{
+    StopEmu();
+    ui->actionSCHIP->setChecked(false);
+    ui->actionSCHIP->setEnabled(true);
+    ui->actionLegacy_C8->setEnabled(false);
+    mEmumanager.Switchmode(EmuManager::EmuMode::LegacyC8);
+}
+
+
+void QTFrontend::on_actionSCHIP_triggered()
+{
+    StopEmu();
+    ui->actionLegacy_C8->setChecked(false);
+    ui->actionLegacy_C8->setEnabled(true);
+    ui->actionSCHIP->setEnabled(false);
+    mEmumanager.Switchmode(EmuManager::EmuMode::SCHIP);
+}
+
