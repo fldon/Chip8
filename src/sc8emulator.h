@@ -4,6 +4,7 @@
 #include <stack>
 #include <string>
 #include <bitset>
+#include <atomic>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include "c8emudisplay.h"
@@ -24,6 +25,7 @@ public:
     SC8Emulator& operator=(const SC8Emulator &&rhs) = delete;
     void StartProcessing() override;
     void StopProcessing() override;
+    bool isProcessing() override;
     virtual ~SC8Emulator() = default;
     void mainloop() override;
     void SetSDLKeyPressedEvent(SDL_Keycode key) override;
@@ -76,6 +78,9 @@ private:
     void stopbeep(int channel);
 
     std::pair<SDL_Keycode, bool> currentpressedkey; //true for keydown, false for keyup-event
+
+    std::atomic_bool keepProcessing{false};
+    std::atomic_bool Stopped{true};
 
 };
 

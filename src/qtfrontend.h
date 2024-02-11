@@ -19,14 +19,18 @@ class QTFrontend :public QMainWindow
 public:
 
     explicit QTFrontend(EmuManager &nManager, QWidget *parent = nullptr);
+    void closeEvent (QCloseEvent *event) override;
     ~QTFrontend() override;
     int run();
 
 private slots:
     void on_actionOpen_triggered();
 
+    void on_actionStop_Emulator_triggered();
+
 private:
     void UpdateEmu();
+    void StopEmu();
 
     Ui::QTFrontend *ui;
     EmuManager &mEmumanager;

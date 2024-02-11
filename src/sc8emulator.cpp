@@ -54,12 +54,17 @@ void SC8Emulator::SetSDLKeyReleasedEvent(SDL_Keycode key)
 
 void SC8Emulator::StartProcessing()
 {
-    //mainloop();
+    keepProcessing = true;
 }
 
 void SC8Emulator::StopProcessing()
 {
-    //TODO
+    keepProcessing = false;
+}
+
+bool SC8Emulator::isProcessing()
+{
+    return (keepProcessing || !Stopped);
 }
 
 /*reads filename to open from cin and copies a program into ram starting at 0x200*/
@@ -178,7 +183,6 @@ void SC8Emulator::stopbeep(int channel)
 
 void SC8Emulator::mainloop() {
     //Main loop flag
-    bool quit = false;
 
     std::vector<SDL_Keycode> keyPressed; // last element in keypress enum as of 25/12/2023
 
@@ -194,8 +198,9 @@ void SC8Emulator::mainloop() {
     //{
         //Handle events on queue
         //while( SDL_PollEvent( &e ) != 0 )
-        if(currentpressedkey.first != 0)
+        if(keepProcessing && currentpressedkey.first != 0)
         {
+            Stopped = false;
             /*
             switch(e.type)
             {
@@ -251,6 +256,7 @@ void SC8Emulator::mainloop() {
 
         //std::this_thread::sleep_for(EXEC_INTERVAL_MUS);
         dsp.refresh();
+        Stopped = true;
     //}
 }
 

@@ -7,6 +7,7 @@ class IC8Emulator{
 public:
     virtual void StartProcessing() = 0;
     virtual void StopProcessing() = 0;
+    virtual bool isProcessing() = 0;
     virtual void mainloop() = 0;
     virtual void SetSDLKeyPressedEvent(SDL_Keycode key) = 0;
     virtual void SetSDLKeyReleasedEvent(SDL_Keycode key) = 0;

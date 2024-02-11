@@ -8,7 +8,7 @@ C8Timer::C8Timer()
 
 void C8Timer::decrement()
 {//every 1/60 second interval, decrement the timerval (if above 0), then sleep for 1/60 of a second
-   while(true)
+   while(keepRunning)
    {
        if(timerval > 0)
        {
@@ -27,4 +27,10 @@ unsigned char C8Timer::getTimerval() const
 void C8Timer::setTimerval(unsigned char newval)
 {
    timerval = newval;
+}
+
+C8Timer::~C8Timer()
+{
+    keepRunning = false;
+    decrementthread.join();
 }

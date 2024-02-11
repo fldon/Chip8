@@ -8,13 +8,18 @@ To start, run the emulator and give the path to the program to be loaded on the 
 
 -Add GUI Frontent, where user can restart emulator with new program and switch modes, also add debug output for registers and currently loaded instruction and PC position
 
-1. Make the GUI stop the emulator when pressing “Stop emulator”
-2. Implement the switch of modes (in the gui, the modes need to be exclusive to each other)
-3. Implement debug mode in emulator and in GUI
+2. Disable “load file” when an emulator is running actively
+And disable “Stop emulator” when no emulator is running
+
+3. Implement the switch of modes
+Mode switch should only work when emulator is stopped, or should stop it when switching
+Mode switch should be exclusive to each other
+
+4. Implement debug mode in emulator and in GUI, where one instruction is loaded with each keypress / buttonpress and the registers are printed each time
+
+
 
 -Make running speed configurable using the frontend
-
--Include debug mode, where one instruction is loaded with each keypress
 
 -Add schip support:
 1. Add enabling and disabling commands for hires display mode in display class

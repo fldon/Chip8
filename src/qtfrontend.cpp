@@ -10,10 +10,12 @@ QTFrontend::QTFrontend(EmuManager &nManager, QWidget *parent)
     show();
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, QOverload<>::of(&QTFrontend::UpdateEmu));
+    setAttribute(Qt::WA_QuitOnClose);
 }
 
 QTFrontend::~QTFrontend()
 {
+    StopEmu();
     delete ui;
 }
 
@@ -30,6 +32,24 @@ void QTFrontend::on_actionOpen_triggered()
     {
         mEmumanager.StartEmulator(fileName.toStdString());
     }
-    static int ExecuteInterval = 1; //test
+    static int ExecuteInterval = 16; //test
     timer->start(ExecuteInterval);
+}
+
+void QTFrontend::on_actionStop_Emulator_triggered()
+{
+    StopEmu();
+}
+
+void QTFrontend::StopEmu()
+{
+    //stop timer before stopping emulator
+    timer->stop();
+    mEmumanager.StopEmulator();
+}
+
+void QTFrontend::closeEvent (QCloseEvent *event)
+{
+    StopEmu();
+    event->accept();
 }

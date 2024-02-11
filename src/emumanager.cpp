@@ -12,10 +12,18 @@ EmuManager::EmuManager()
 void EmuManager::StopEmulator()
 {
     std::cout << "Emumanager::StopEmulator";
-    //TODO call stopprocessing on emulator object, then close sdl window
-    mEmulator->StopProcessing();
 
-    gWidget = nullptr;
+    if(mEmulator != nullptr)
+    {
+        mEmulator->StopProcessing();
+        while(mEmulator->isProcessing())
+        {
+
+        }
+        //Destroy emulator object and SDLWidget
+        gWidget = nullptr;
+        mEmulator = nullptr;
+    }
 }
 
 void EmuManager::createSDLWindow()
@@ -52,7 +60,8 @@ void EmuManager::ExecuteEmulatorStep()
 
 void EmuManager::Switchmode(EmuManager::EmuMode newMode)
 {
-    std::cout << "EmuManager::Switchmode";
+    StopEmulator();
+    mMode = newMode;
 }
 
 void EmuManager::SendSDLKeyPressedEvent(SDL_Keycode key)
