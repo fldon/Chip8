@@ -32,13 +32,21 @@ private slots:
 
     void on_actionSCHIP_triggered();
 
+    void on_actionStart_Debugging_triggered();
+
+    void on_DebugStepBtn_clicked();
+
 private:
     void UpdateEmu();
     void StopEmu();
+    void FillDebugRegisterTbl();
+    void ClearDebugRegisterTbl();
 
     Ui::QTFrontend *ui;
     EmuManager &mEmumanager;
     std::unique_ptr<QTimer> timer;
+
+    bool debugMode{false};
 };
 
 #endif // QTFRONTEND_H

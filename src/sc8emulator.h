@@ -31,6 +31,10 @@ public:
     void SetSDLKeyPressedEvent(SDL_Keycode key) override;
     void SetSDLKeyReleasedEvent(SDL_Keycode key) override;
 
+    std::vector<uint8_t> GetCurrentRegisters() const override;
+    uint16_t GetCurrentPC() const override;
+    uint16_t GetCurrentIReg() const override;
+
 protected:
 
     virtual void read_input_file(std::string filename);

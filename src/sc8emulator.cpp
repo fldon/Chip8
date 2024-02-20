@@ -855,3 +855,22 @@ void SC8Emulator::initsprites() {
     if(curr > SPRITEEND) throw std::runtime_error("Sprite memory exceeded during allocation!");
     curr += 15; //go to next sprite slot
 }
+
+std::vector<uint8_t> SC8Emulator::GetCurrentRegisters() const
+{
+    std::vector<uint8_t> resvec{};
+    for(auto &regval : reg)
+    {
+        resvec.push_back(regval);
+    }
+    return resvec;
+}
+
+uint16_t SC8Emulator::GetCurrentPC() const
+{
+    return program_counter;
+}
+uint16_t SC8Emulator::GetCurrentIReg() const
+{
+    return Ireg;
+}

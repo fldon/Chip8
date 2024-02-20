@@ -6,11 +6,6 @@ You can stop the currently running program from the main window.
  
  
  TODO:
-
--Implement debug mode in emulator and in GUI, where one instruction is loaded with each keypress / buttonpress and the registers are printed each time
-That means the emulator needs to have a getRegister(i) function and the emuManager needs to pass that command and the return value through from the Frontend class
-Also, the QtFrontend timer needs to be stopped and instead every press of the “next Instruction” button needs to call the main emulator loop once and print the new register values
-
 -Make the timer countdowns only depend on the running speed of the emulator: so the timer needs to decrease based on execution cycles, not on time
 Maybe just assume that one execution cycle takes 1/60th of a second? That is of course wrong, but the only other option is to somehow get execution timings for every single opcode (which I couldn’t find so far)
 

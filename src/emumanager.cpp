@@ -73,3 +73,17 @@ void EmuManager::SendSDLKeyReleasedEvent(SDL_Keycode key)
 {
     mEmulator->SetSDLKeyReleasedEvent(key);
 }
+
+std::vector<uint8_t> EmuManager::GetCurrentRegisters() const
+{
+    return mEmulator->GetCurrentRegisters();
+}
+
+uint16_t EmuManager::GetCurrentPC() const
+{
+    return mEmulator->GetCurrentPC();
+}
+uint16_t EmuManager::GetCurrentIReg() const
+{
+    return mEmulator->GetCurrentIReg();
+}

@@ -1,5 +1,3 @@
-#include <iostream>
-#include<fstream>
 #include <stdexcept>
 #include "c8timer.h"
 #include "cc8emulator.h"
@@ -7,20 +5,8 @@
 #include "emumanager.h"
 #include "qtfrontend.h"
 
-//TODO Make this mode configurable to SCHIP instruction set in frontend
-enum class modes { ORIGCHIP };
-constexpr modes mode = modes::ORIGCHIP;
-
-/*initializes the sdl subsystems used in the emulator
-TODO: needs to initialize keyboard input and audio as well*/
+/*initializes the sdl subsystems used in the emulator*/
 bool initsdl(SDL_Window * &gWindow, SDL_Renderer * &gRenderer) {
-
-    //Screen dimension constants
-    const int SCREEN_WIDTH_OFFSET = 0;
-    const int SCREEN_HEIGHT_OFFSET = 0;
-    const int SCREEN_WIDTH = 1280 + SCREEN_WIDTH_OFFSET;
-    const int SCREEN_HEIGHT = 640 + SCREEN_HEIGHT_OFFSET;
-
     //The window we'll be rendering to
     gWindow = NULL;
     //The window renderer
@@ -90,15 +76,6 @@ int main(int argc, char*argv[]) {
 
     //wait here for the frontend to give "quit" signal
     app.exec();
-
-    //Destroy window
-    //TODO should happen through emumanager during switch or stop function, not explicitly here
-    /*
-    SDL_DestroyRenderer( gRenderer );
-    SDL_DestroyWindow( gWindow );
-    gWindow = NULL;
-    gRenderer = NULL;
-    */
 
     //Quit SDL subsystems
     SDL_Quit();

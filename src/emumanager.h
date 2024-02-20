@@ -29,6 +29,10 @@ public:
     void SendSDLKeyPressedEvent(SDL_Keycode);
     void SendSDLKeyReleasedEvent(SDL_Keycode);
 
+    std::vector<uint8_t> GetCurrentRegisters() const;
+    uint16_t GetCurrentPC() const;
+    uint16_t GetCurrentIReg() const;
+
 private:
     void createSDLWindow();
 
