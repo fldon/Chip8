@@ -6,21 +6,6 @@ You can stop the currently running program from the main window.
  
  
  TODO:
--Make the timer countdowns only depend on the running speed of the emulator: so the timer needs to decrease based on execution cycles, not on time
-Maybe just assume that one execution cycle takes 1/600th of a second? That is of course wrong, but the only other option is to somehow get execution timings for every single opcode (which I couldn’t find so far)
-Of course, this timing-idea must also be applied to the screen refresh timings, meaning that during each execution step a corresponding decrementTimer() function on the display must be called
-
-Current Problem: I really don’t get how the three timers relate to the cycle speed. I can’t just count up to 500 cycles per second of the timers if I set the execution speed to 500hz: then the timers are WAYYYY too slow, not even close to 1 second per decrease. For some reason this was not a problem when using actual timers that ticked down per second…
-How to make this more sensible? I must be missing something about this whole cycle and synchronization/timing thing
-
-New Problem: Timedus’ Quirk program now says that I have a clipping error and that the display is “slow”. What is the clipping error and how can I make the display fast enough for the test? Earlier, I just decreased the refresh timer, of course I can no longer do that.
-
-I think what happened: The test only works if the timers run down slower than the display (otherwise it shows “slow”) BUT: If the timers run down way too slowly, it thinks the display synch is off
-But now it says “on” if I put the timers on 3000 cycles, so all good
-
-Only problem left: Clipping gives Err2 now!
-
-
 -Make running speed configurable using the frontend
 
 -Add schip support:

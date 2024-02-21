@@ -183,7 +183,7 @@ void SC8Emulator::stopbeep(int channel)
 
 void SC8Emulator::mainloop() {
     //Main loop flag
-    static constexpr unsigned int CYCLES_PER_INSTR = 10;
+    static constexpr unsigned int CYCLES_PER_INSTR = 2; //Assume cycles per instruction (just some bullshit value to get timings okayish)
 
     std::vector<SDL_Keycode> keyPressed; // last element in keypress enum as of 25/12/2023
 
@@ -256,7 +256,7 @@ void SC8Emulator::mainloop() {
     }
 
     unsigned int sub_cycles = dsp.refresh(CYCLES_PER_INSTR);
-    delaytimer.decrement(CYCLES_PER_INSTR - sub_cycles); //Assume ten cycles per instruction (just some bullshit value to get timings okayish)
+    delaytimer.decrement(CYCLES_PER_INSTR - sub_cycles);
     soundtimer.decrement(CYCLES_PER_INSTR - sub_cycles);
 
     Stopped = true;

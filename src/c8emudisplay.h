@@ -12,8 +12,8 @@ using namespace std::chrono_literals;
 /*Should contain 64*32 pixels in regular mode, 128*64 in hp48 mode*/
 class C8EmuDisplay{
 public:
-    static constexpr unsigned int SCREEN_WIDTH = 128;
-    static constexpr unsigned int SCREEN_HEIGHT = 64;
+    static constexpr unsigned int SCREEN_WIDTH = 128/2;
+    static constexpr unsigned int SCREEN_HEIGHT = 64/2;
     C8EmuDisplay(SDL_Window*, SDL_Renderer*, uint8_t* vf);
     bool draw(std::bitset<120>, unsigned int, unsigned int); //draw lowres sprite
     bool draw(std::bitset<256>, unsigned int, unsigned int); //draw hires sprite

@@ -37,10 +37,7 @@ public:
         setAttribute(Qt::WA_PaintOnScreen);
         setUpdatesEnabled(false);
 
-        // Set the new video mode with the new window size
-        //char variable[64];
-        //snprintf(variable, sizeof(variable), "SDL_WINDOWID=0x%lx", winId());
-        //putenv(variable);
+        //TODO: Set window size in constructor and make it fixed
 
         //SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
 
@@ -52,7 +49,6 @@ public:
 
         void *NativeQtWindow = nullptr;
         NativeQtWindow = (void*) (winId());
-        //TODO: how to get Native window from qt widget? I want the pointer to THIS widget window right here!
 
         //mScreen = SDL_SetVideoMode(640, 480, 8, SDL_SWSURFACE);
         mWindow = SDL_CreateWindowFrom(NativeQtWindow);

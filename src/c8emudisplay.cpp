@@ -33,22 +33,28 @@ bool C8EmuDisplay::draw(std::bitset<120> sprite, unsigned int xorig, unsigned in
     //Go through sprite bytes from left to right
     *VF = 0;
     for(size_t i = 0; i < 15; i++) {
-        std::bitset<SCREEN_WIDTH> currline;// = std::bitset<SCREEN_WIDTH>() & sprite;
+        std::bitset<120> currline;// = std::bitset<SCREEN_WIDTH>() & sprite;
         for(std::size_t bit = 0; bit < 120; bit++)
         {
             currline[bit] = sprite[bit];
         }
         currline >>= ((14 - i)*8); // go through sprite lines
-        currline = currline & std::bitset<SCREEN_WIDTH>(255); //only take rightmost byte
+        currline = currline & std::bitset<120>(255); //only take rightmost byte
+
+        std::bitset<SCREEN_WIDTH> shiftedline;
+        for(std::size_t bit = 0; bit < SCREEN_WIDTH; ++bit)
+        {
+            shiftedline[bit] = currline[bit];
+        }
         //XOR the sprite and the screen bitset starting at xorig,yorig
         //Cut off sprites at the edges
         //TODO: XOR currently assumes that screen fits inside a long. This is not ideal and should be fixed
         if((yorig + i) < SCREEN_HEIGHT){
             //Special case: sprite gets cut off on the right side (then it has to be shifted right instead of left)
-            auto shiftedline = xorig <= (SCREEN_WIDTH-8) ? (currline << (SCREEN_WIDTH - 8 - xorig)) : (currline >> (xorig - (SCREEN_WIDTH - 8)));
+            shiftedline = xorig <= (SCREEN_WIDTH-8) ? (shiftedline << (SCREEN_WIDTH - 8 - xorig)) : (shiftedline >> (xorig - (SCREEN_WIDTH - 8)));
             if((pixels[yorig + i] & (shiftedline)).any())
             {
-                *VF = 1; //TODO: test whether this works, it should
+                *VF = 1;
             }
             pixels[yorig + i] = std::bitset<SCREEN_WIDTH>(pixels[yorig + i] ^ (shiftedline));   //display bitset of the current line
         }
@@ -61,7 +67,7 @@ unsigned int C8EmuDisplay::refresh(unsigned int passedCycles) {
     unsigned int returncyc = 0;
     if(cyclesSinceLastSec >= CYCLES_PER_SCREEN_REFRESH)
     {
-        returncyc = cyclesSinceLastSec - CYCLES_PER_SECOND; //return cycles that were "too much" (We synchronize until the display interrupt, not one cycle longer)
+        returncyc = cyclesSinceLastSec - CYCLES_PER_SCREEN_REFRESH; //return cycles that were "too much" (We synchronize until the display interrupt, not one cycle longer)
         cyclesSinceLastSec = 0; //synchronize to display, don't keep the remainder
 
     }

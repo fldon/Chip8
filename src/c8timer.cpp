@@ -7,13 +7,13 @@
 void C8Timer::decrement(unsigned int cycles)
 {//every 1/60 second interval, decrement the timerval (if above 0), then sleep for 1/60 of a second
     cyclesSinceLastSec += cycles;
-    if(cyclesSinceLastSec > CYCLES_PER_SECOND)
+    if(cyclesSinceLastSec > CYCLES_PER_TIMER_DECREASE)
     {
        if(timervalSecs > 0)
        {
            timervalSecs--;
        }
-       cyclesSinceLastSec = cyclesSinceLastSec - CYCLES_PER_SECOND; //keep remainder
+       cyclesSinceLastSec = cyclesSinceLastSec - CYCLES_PER_TIMER_DECREASE; //keep remainder
     }
 }
 

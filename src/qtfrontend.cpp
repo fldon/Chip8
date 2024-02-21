@@ -41,7 +41,7 @@ void QTFrontend::on_actionOpen_triggered()
 
         if(!debugMode)
         {
-            static int ExecuteInterval = 2; //500HZ
+            static int ExecuteInterval = 4; //250HZ
             timer->start(ExecuteInterval);
         }
     }
