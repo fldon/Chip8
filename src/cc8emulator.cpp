@@ -223,9 +223,7 @@ void CC8Emulator::mainloop() {
         {
             stopbeep(soundchannel);
         }
-
-        std::this_thread::sleep_for(EXEC_INTERVAL_MUS);
-        dsp.refresh();
+        dsp.refresh(1);
     }
 }
 

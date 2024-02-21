@@ -1,36 +1,28 @@
 #include "c8timer.h"
-
-//spawn new thread for timer decrement
-C8Timer::C8Timer()
-   :decrementthread(&C8Timer::decrement, this)
-{
-}
-
-void C8Timer::decrement()
+/*
+ * Passes the given amount of cycles in time
+ * If cycles are enough to pass a second, decrement the actual timer value by 1
+ * Do not "throw away" cycles when that happens
+ * */
+void C8Timer::decrement(unsigned int cycles)
 {//every 1/60 second interval, decrement the timerval (if above 0), then sleep for 1/60 of a second
-   while(keepRunning)
-   {
-       if(timerval > 0)
+    cyclesSinceLastSec += cycles;
+    if(cyclesSinceLastSec > CYCLES_PER_SECOND)
+    {
+       if(timervalSecs > 0)
        {
-           timerval--;
+           timervalSecs--;
        }
-       std::this_thread::sleep_for(std::chrono::microseconds(MUS_INTERVAL));
-   }
+       cyclesSinceLastSec = cyclesSinceLastSec - CYCLES_PER_SECOND; //keep remainder
+    }
 }
-
 
 unsigned char C8Timer::getTimerval() const
 {
-   return timerval;
+   return timervalSecs;
 }
 
 void C8Timer::setTimerval(unsigned char newval)
 {
-   timerval = newval;
-}
-
-C8Timer::~C8Timer()
-{
-    keepRunning = false;
-    decrementthread.join();
+   timervalSecs = newval;
 }

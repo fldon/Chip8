@@ -6,7 +6,7 @@
 SC8Emulator::SC8Emulator(std::string filename, SDL_Window *gWindow, SDL_Renderer *gRenderer)
     :dsp(gWindow, gRenderer, static_cast<uint8_t*>(reg.data() + NUM_OF_REGS - 1))
 {
-//init everything and read program from file, but don't start the mainloop yet
+    //init everything and read program from file, but don't start the mainloop yet
 
     sdltoc8keys.insert(std::make_pair(SDLK_1, keys::KEY_ONE));
     sdltoc8keys.insert(std::make_pair(SDLK_2, keys::KEY_TWO));
@@ -99,7 +99,7 @@ uint16_t SC8Emulator::fetch() {
     uint16_t a = (static_cast<uint16_t>(ram[program_counter] & 255)) << 8;
     uint16_t b = static_cast<uint16_t> (ram[program_counter+1] & 255);
 #ifdef DEBUG
-        std::cerr << "Debug: currently fetched instruction: " << std::hex << ((a>>8)&255) << b << std::endl;
+    std::cerr << "Debug: currently fetched instruction: " << std::hex << ((a>>8)&255) << b << std::endl;
 #endif
     return static_cast<uint16_t>(a | b);
 }
@@ -183,19 +183,20 @@ void SC8Emulator::stopbeep(int channel)
 
 void SC8Emulator::mainloop() {
     //Main loop flag
+    static constexpr unsigned int CYCLES_PER_INSTR = 10;
 
     std::vector<SDL_Keycode> keyPressed; // last element in keypress enum as of 25/12/2023
 
     //Event handler
     SDL_Event e;
 
-    //While application is running
+//While application is running
 #ifdef DEBUG
     while( !quit && std::cin.get() )
 #else
     //while( !quit )
 #endif
-    //{
+        //{
         //Handle events on queue
         //while( SDL_PollEvent( &e ) != 0 )
         if(keepProcessing && currentpressedkey.first != 0)
@@ -235,34 +236,36 @@ void SC8Emulator::mainloop() {
                 keyPressed.erase(std::remove(keyPressed.begin(), keyPressed.end(), currentpressedkey.first), keyPressed.end());
             }
         }
-        //handle keypressevents and give them to the execute function
+    //handle keypressevents and give them to the execute function
 
-        //decode program commands
-        //excecute program commands
-        execute(fetch(), keyPressed);
+    //decode program commands
+    //excecute program commands
+    if(execute(fetch(), keyPressed))
+    {
         //iterate to next command (increment PC by two bytes)
         program_counter += 2;
+    }
+    //start or stop playing sound depending on soundtimer:
+    if(soundtimer.getTimerval() > 0)
+    {
+        startbeep(soundchannel);
+    }
+    else
+    {
+        stopbeep(soundchannel);
+    }
 
+    unsigned int sub_cycles = dsp.refresh(CYCLES_PER_INSTR);
+    delaytimer.decrement(CYCLES_PER_INSTR - sub_cycles); //Assume ten cycles per instruction (just some bullshit value to get timings okayish)
+    soundtimer.decrement(CYCLES_PER_INSTR - sub_cycles);
 
-        //start or stop playing sound depending on soundtimer:
-        if(soundtimer.getTimerval() > 0)
-        {
-            startbeep(soundchannel);
-        }
-        else
-        {
-            stopbeep(soundchannel);
-        }
-
-        //std::this_thread::sleep_for(EXEC_INTERVAL_MUS);
-        dsp.refresh();
-        Stopped = true;
+    Stopped = true;
     //}
 }
 
 /*TODO:
 Decode and execute the input command according to the c8 specs*/
-void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypressed) {
+bool SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypressed) {
     //decode cmd into four 4-bit nibbles:
     unsigned char nibbles[4] = {0,0,0,0};
     for(int i = 0; i < 4; i++) {
@@ -270,7 +273,7 @@ void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypress
 
     }
 #ifdef DEBUG
-        std::cerr << "Debug: currently read nibbles: " << std::hex << ((short)(nibbles[0])&15) << ((short)(nibbles[1])&15) << ((short)(nibbles[2])&15)<< ((short)(nibbles[3])&15) << std::endl;
+    std::cerr << "Debug: currently read nibbles: " << std::hex << ((short)(nibbles[0])&15) << ((short)(nibbles[1])&15) << ((short)(nibbles[2])&15)<< ((short)(nibbles[3])&15) << std::endl;
 #endif
     //huge switch-case for all operations using the 4 nibbles:
     //TODO: These are the variables used in the switch case, they can't be declared inside it: better to find a nice solution for this
@@ -398,7 +401,7 @@ void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypress
         {
             reg[nibbles[1]] = reg[nibbles[1]] | reg[nibbles[2]];
             //if(mode == modes::ORIGCHIP)
-                reg[NUM_OF_REGS - 1] = 0;
+            reg[NUM_OF_REGS - 1] = 0;
         }break;
             //8XY2: Set VX to Value of VX AND'd with value of VY
             //VY is not affected
@@ -406,7 +409,7 @@ void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypress
         {
             reg[nibbles[1]] = reg[nibbles[1]] & reg[nibbles[2]];
             //if(mode == modes::ORIGCHIP)
-                reg[NUM_OF_REGS - 1] = 0;
+            reg[NUM_OF_REGS - 1] = 0;
         }break;
             //8XY3: Set VX to Value of VX XOR'd with value of VY
             //VY is not affected
@@ -414,7 +417,7 @@ void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypress
         {
             reg[nibbles[1]] = reg[nibbles[1]] ^ reg[nibbles[2]];
             //if(mode == modes::ORIGCHIP)
-                reg[NUM_OF_REGS - 1] = 0;
+            reg[NUM_OF_REGS - 1] = 0;
         }break;
             /*8XY4: Add VY-value to VX-value
             If result overflows a value of 255, VF is set to 1, otherwise to 0*/
@@ -485,7 +488,7 @@ void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypress
         case 6:
         {
             //if(mode == modes::ORIGCHIP)
-                reg[nibbles[1]] = reg[nibbles[2]];
+            reg[nibbles[1]] = reg[nibbles[2]];
             bool bitshiftedout = false;
             //If shifted out bit is 1, set Overflow register
             if(reg[nibbles[1]] & 1)
@@ -507,7 +510,7 @@ void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypress
         case 0xE:
         {
             //if(mode == modes::ORIGCHIP)
-                reg[nibbles[1]] = reg[nibbles[2]];
+            reg[nibbles[1]] = reg[nibbles[2]];
             //If shifted out(to the left) bit is 1, set Overflow register to 1, otherwise 0
             bool bitshiftedout = false;
             if(reg[nibbles[1]]>>7 & 1)
@@ -552,16 +555,16 @@ void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypress
     {
         //BNNN: original behaviour: jump to NNN, and add the value of V0
         //if(mode == modes::ORIGCHIP)
-            //Get value of NNN
-            res_1 = 0;
-            for(int i = 1; i < 4; i++) {
-                res_1 = res_1 | ((short)nibbles[i] & 15);
-                if(i < 3)
-                {
-                    res_1 <<= 4;
-                }
+        //Get value of NNN
+        res_1 = 0;
+        for(int i = 1; i < 4; i++) {
+            res_1 = res_1 | ((short)nibbles[i] & 15);
+            if(i < 3)
+            {
+                res_1 <<= 4;
             }
-            program_counter = res_1 + reg[0];
+        }
+        program_counter = res_1 + reg[0];
         program_counter-=2; //Decrement because PC is incremented after execute command
     }break;
 
@@ -602,7 +605,10 @@ void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypress
             }
         }
         spriteset <<= 8 * (14-(nibbles[3]-1)); //all sprites are 15 bytes long, so shift 14 bytes max
-        dsp.draw(spriteset, reg[nibbles[1]], reg[nibbles[2]]);
+        if(!dsp.draw(spriteset, reg[nibbles[1]], reg[nibbles[2]]))
+        {
+            return false;
+        }
         break;
 
     case 0xE:
@@ -708,7 +714,7 @@ void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypress
                 ram[Ireg + i] = reg[i];
             }
             //if(mode == modes::ORIGCHIP)
-                Ireg = Ireg + numbofregs + 1;
+            Ireg = Ireg + numbofregs + 1;
         }
         //FX65: Load memory into V0 to VX inclusive from memory addresses starting with the one in I
         if(nibbles[2] == 6 && nibbles[3] == 5)
@@ -721,7 +727,7 @@ void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypress
                 reg[i] = ram[Ireg + i];
             }
             //if(mode == modes::ORIGCHIP)
-                Ireg = Ireg + numbofregs + 1;
+            Ireg = Ireg + numbofregs + 1;
         }
     }break;
 
@@ -731,6 +737,7 @@ void SC8Emulator::execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypress
         throw std::runtime_error("execute: First nibble of operation is invalid!");
         break;
     }
+    return true;
 }
 
 /*Insert sprites for 0 to F in the area from spritestart to spriteend - 5 bytes each

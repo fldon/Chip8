@@ -36,13 +36,13 @@ void QTFrontend::on_actionOpen_triggered()
     if ( fileName.isNull() == false )
     {
         mEmumanager.StartEmulator(fileName.toStdString());
+        ui->actionOpen->setEnabled(false);
+        ui->actionStop_Emulator->setEnabled(true);
 
         if(!debugMode)
         {
-            static int ExecuteInterval = 16; //test
+            static int ExecuteInterval = 2; //500HZ
             timer->start(ExecuteInterval);
-            ui->actionOpen->setEnabled(false);
-            ui->actionStop_Emulator->setEnabled(true);
         }
     }
 }

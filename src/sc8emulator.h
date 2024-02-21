@@ -75,7 +75,7 @@ private:
 
     uint16_t givecharaddress(uint8_t  c);
     uint16_t fetch();
-    void execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypressed);
+    bool execute(uint16_t cmd, const std::vector<SDL_Keycode> &keypressed);
     std::bitset<120> givesprite(char c);
 
     void startbeep(int channel);

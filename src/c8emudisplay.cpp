@@ -17,8 +17,16 @@ void C8EmuDisplay::clearScreen() {
 Sprite is drawn starting from (xorig, yorig)
 x and y loop if they are larger than screen resolution
 Sprites are cut off if they are too large
-If any pixel is turned off by drawing, the VF register needs to be set to 1, otherwise to 0*/
-void C8EmuDisplay::draw(std::bitset<120> sprite, unsigned int xorig, unsigned int yorig) {
+If any pixel is turned off by drawing, the VF register needs to be set to 1, otherwise to 0
+Also synchronizes to 60HZ refresh rate of screen. Returns false if Refresh rate is not yet reached
+*/
+bool C8EmuDisplay::draw(std::bitset<120> sprite, unsigned int xorig, unsigned int yorig) {
+
+    if(cyclesSinceLastSec < CYCLES_PER_SCREEN_REFRESH)
+    {
+        return false;
+    }
+
     xorig = xorig % SCREEN_WIDTH;
     yorig = yorig % SCREEN_HEIGHT;
     //Sprites are at most 15 bytes long per specification
@@ -45,70 +53,38 @@ void C8EmuDisplay::draw(std::bitset<120> sprite, unsigned int xorig, unsigned in
             pixels[yorig + i] = std::bitset<SCREEN_WIDTH>(pixels[yorig + i] ^ (shiftedline));   //display bitset of the current line
         }
     }
+    return true;
 }
 
 /*calls to SDL to (re)draw all the pixels and to update the window*/
-void C8EmuDisplay::refresh() {
-    bool rendernow = true;
-
-    //if(displaymode == displaymodes::ORIGCHIP)
+unsigned int C8EmuDisplay::refresh(unsigned int passedCycles) {
+    unsigned int returncyc = 0;
+    if(cyclesSinceLastSec >= CYCLES_PER_SCREEN_REFRESH)
     {
-        //count time since last refresh call: only call refresh if time is larger than refresh interval
-        // otherwise, set rendernow to false
-        static std::chrono::time_point<std::chrono::high_resolution_clock> lastTimeRefresh = std::chrono::high_resolution_clock::now();
-#ifdef CHECKFRAMETIMINGS
-        static std::chrono::time_point<std::chrono::high_resolution_clock> lastFullSecond = std::chrono::high_resolution_clock::now();
-        static int framecount = 0;
-#endif
-        static constexpr std::chrono::duration MUS_INTERVAL = 16667us;
-        {
-            do
-            {
-                const std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
-                if(std::chrono::duration_cast<std::chrono::microseconds>(now - lastTimeRefresh) <  MUS_INTERVAL)
-                {
-                    rendernow = false;
-                }
-                else
-                {
-#ifdef CHECKFRAMETIMINGS
-                    framecount++;
-                    std::cout << "Time for last frame: " << std::chrono::duration_cast<std::chrono::microseconds>(now - lastTimeRefresh).count() << "mus\n";
-#endif
-                    lastTimeRefresh = std::chrono::high_resolution_clock::now();
-                    rendernow = true;
-                }
-            }
-            while(!rendernow);
-        }
-#ifdef CHECKFRAMETIMINGS
-        const std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
-        if(std::chrono::duration_cast<std::chrono::microseconds>(now - lastFullSecond) > 1s)
-        {
-            lastFullSecond = std::chrono::high_resolution_clock::now();
-            std::cout << "Frames in last second drawn: " << framecount << "\n";
-            framecount = 0;
-        }
-#endif
+        returncyc = cyclesSinceLastSec - CYCLES_PER_SECOND; //return cycles that were "too much" (We synchronize until the display interrupt, not one cycle longer)
+        cyclesSinceLastSec = 0; //synchronize to display, don't keep the remainder
+
     }
 
-    if (rendernow)
-    {
-        //Clear screen
-        SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );
-        SDL_RenderClear( gRenderer );
+    //Clear screen
+    SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );
+    SDL_RenderClear( gRenderer );
 
-        //Render red filled quad (128*64)
-        for(int i = 0; i < SCREEN_WIDTH; i++) {
-            for(int j = 0; j < SCREEN_HEIGHT; j++) {
-                SDL_Rect fillRect = {i * 10, j * 10, 10, 10 }; //TODO: 10 as magic number should probably be replaced... It stems from the factor ten in 64 pixels to 640 as screen width
-                SDL_SetRenderDrawColor( gRenderer, ((pixels[j] >> (SCREEN_WIDTH - 1 - i)) & std::bitset<SCREEN_WIDTH>(1)).any() ? 0xFF : 0x00, 0x00, 0x00, 0xFF );
-                SDL_RenderFillRect( gRenderer, &fillRect );
-            }
+    //Render red filled quad (128*64)
+    for(int i = 0; i < SCREEN_WIDTH; i++) {
+        for(int j = 0; j < SCREEN_HEIGHT; j++) {
+            SDL_Rect fillRect = {i * 10, j * 10, 10, 10 }; //TODO: 10 as magic number should probably be replaced... It stems from the factor ten in 64 pixels to 640 as screen width
+            SDL_SetRenderDrawColor( gRenderer, ((pixels[j] >> (SCREEN_WIDTH - 1 - i)) & std::bitset<SCREEN_WIDTH>(1)).any() ? 0xFF : 0x00, 0x00, 0x00, 0xFF );
+            SDL_RenderFillRect( gRenderer, &fillRect );
         }
-
-
-        //Update screen
-        SDL_RenderPresent( gRenderer );
     }
+
+    if(returncyc == 0)
+    {
+        cyclesSinceLastSec += passedCycles; //this is incremented here, so the draw function can check for refresh synchronization
+    }
+
+    //Update screen
+    SDL_RenderPresent( gRenderer );
+    return returncyc;
 }
