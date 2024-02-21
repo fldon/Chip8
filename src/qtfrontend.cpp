@@ -15,6 +15,7 @@ QTFrontend::QTFrontend(EmuManager &nManager, QWidget *parent)
     //Set default Enabled states
     ui->actionStop_Emulator->setEnabled(false);
     ui->DebugStepBtn->setEnabled(false);
+    ui->SpeedLbl->setText(QString::fromStdString(std::to_string(1000 /msPerUpdate) + "Hz"));
 }
 
 QTFrontend::~QTFrontend()
@@ -41,8 +42,7 @@ void QTFrontend::on_actionOpen_triggered()
 
         if(!debugMode)
         {
-            static int ExecuteInterval = 4; //250HZ
-            timer->start(ExecuteInterval);
+            timer->start(msPerUpdate);
         }
     }
 }
@@ -146,3 +146,38 @@ void QTFrontend::ClearDebugRegisterTbl()
 {
     ui->RegisterTbl->clearContents();
 }
+
+void QTFrontend::on_SpeedMinusBtn_clicked()
+{
+    if(msPerUpdate < MAXUPDATESPEED)
+    {
+        msPerUpdate += UPDATESPEEDINCREMENT;
+        if(msPerUpdate > MAXUPDATESPEED || msPerUpdate < MINUPDATESPEED)
+        {
+            msPerUpdate = MAXUPDATESPEED;
+        }
+    }
+    ui->SpeedLbl->setText(QString::fromStdString(std::to_string(1000 /msPerUpdate) + "Hz"));
+    if(timer->isActive())
+    {
+        timer->start(msPerUpdate);
+    }
+}
+
+void QTFrontend::on_SpeedPlusBtn_clicked()
+{
+    if(msPerUpdate > MINUPDATESPEED)
+    {
+        msPerUpdate -= UPDATESPEEDINCREMENT;
+        if(msPerUpdate > MAXUPDATESPEED || msPerUpdate < MINUPDATESPEED)
+        {
+            msPerUpdate = MINUPDATESPEED;
+        }
+    }
+    ui->SpeedLbl->setText(QString::fromStdString(std::to_string(1000 /msPerUpdate) + "Hz"));
+    if(timer->isActive())
+    {
+        timer->start(msPerUpdate);
+    }
+}
+

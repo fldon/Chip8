@@ -36,6 +36,10 @@ private slots:
 
     void on_DebugStepBtn_clicked();
 
+    void on_SpeedPlusBtn_clicked();
+
+    void on_SpeedMinusBtn_clicked();
+
 private:
     void UpdateEmu();
     void StopEmu();
@@ -47,6 +51,11 @@ private:
     std::unique_ptr<QTimer> timer;
 
     bool debugMode{false};
+
+    std::atomic_uint_least32_t msPerUpdate{4}; //Default 250HZ
+    static constexpr uint32_t MAXUPDATESPEED = 100; //100 ms per execution -> 10Hz
+    static constexpr uint32_t MINUPDATESPEED = 1; //1 ms per execution -> 1kHZ
+    static constexpr uint32_t UPDATESPEEDINCREMENT = 1; //in ms
 };
 
 #endif // QTFRONTEND_H
